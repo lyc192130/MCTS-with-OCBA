@@ -18,13 +18,6 @@ X - -
 corrresponds to this tuple:
 (False, None, True, False, True, None, True, None, None)
 """
-from copy import deepcopy
-from numpy.random import normal, binomial, randint
-from collections import namedtuple, defaultdict
-from random import choice, randrange
-from monte_carlo_tree_search import MCTS, Node
-from numpy import sqrt, savez
-import matplotlib
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import host_subplot
 import mpl_toolkits.axisartist as AA
@@ -50,7 +43,7 @@ def lineplot_pred(x_data, x_label, y1_data, y2_data, y_label, title):
     ax2 = ax1
     ax2.plot(x_data, y2_data, color=y2_color,
              linestyle='solid', marker='o', label='OCBA')
-    ax1.set_ylim([0.6, 1])
+    ax1.set_ylim([0.7, 1.01])
     # Display legend
     ax1.legend(loc='lower right')
     plt.savefig(title+'.eps', format='eps')
@@ -123,7 +116,7 @@ def allocation_dist_plot(actions, ave_Q, ave_std, ave_N, title):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--checkpoint', type=str, help='relative path to checkpoint', default='ckpt/Inventory_K0_p10_budget_1000.pkl')
+        '--checkpoint', type=str, help='relative path to checkpoint', default='ckpt/Inventory_K5_p1_budget_200.pkl')
     args = parser.parse_args()
     ckpt = args.checkpoint
 

@@ -4,7 +4,7 @@ https://gist.github.com/qpwo/c538c6f73727e254fdc7fab81024f6e1
 """
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from numpy import  log,sqrt
+from numpy import log, sqrt
 
 
 class MCTS:
@@ -108,9 +108,9 @@ class MCTS:
     def _expand(self, node, path_reward=None):
         "Add a node to the tree"
         if node.node_type == 's':
-            explored_once = [n for n in self.children[node]
-                             if self.N[n] < self.n0]
-            return explored_once.pop()
+            under_explored = [n for n in self.children[node]
+                              if self.N[n] < self.n0]
+            return under_explored.pop()
         else:
             assert path_reward is not None, "Please include path_reward when expanding an action"
             return node.sample_next_state(path_reward)
@@ -122,9 +122,9 @@ class MCTS:
         while True:
             if not node.is_terminal():
                 node = node.find_random_child()
-                tmp_node = node.sample_next_state(sim_reward_dict)
+                next_node = node.sample_next_state(sim_reward_dict)
                 reward += sim_reward_dict[node]
-                node = tmp_node
+                node = next_node
             if node.terminal:
                 return reward
 
@@ -140,7 +140,6 @@ class MCTS:
             if node.node_type == 's':
                 # Current node is a state node
                 alpha = 1 - 1/(5*self.N[node])
-                # alpha = 1
                 self.V_bar[node] = ((self.N[node]-1)/self.N[node]) * \
                     self.V_bar[node] + self.ave_Q[child]/self.N[node]
                 self.V_hat[node] = (1-alpha) * self.V_bar[node] + alpha * max(
@@ -154,20 +153,18 @@ class MCTS:
                 Population std.
                 '''
                 self.Q[node] += r
-                # This is not necessary anymore with iterative update.
-                # self.all_Q[node].append(r)
                 old_ave_Q = self.ave_Q[node]
                 self.ave_Q[node] = self.Q[node] / self.N[node]
-                # self.std[node] = max([0.01, sqrt(((self.N[node]-1)*self.std[node]**2 + (r - old_ave_Q) * (r - self.ave_Q[node]))/self.N[node])])
                 self.std[node] = self.sigma_0 if self.N[node] == 1 else sqrt(
                     ((self.N[node]-1)*self.std[node]**2 + (r - old_ave_Q) * (r - self.ave_Q[node]))/self.N[node])
                 self.exploration_weight = max(
                     self.exploration_weight, abs(r))
+
     def _uct_select(self, node):
         "Select a child of node, balancing exploration & exploitation"
 
         # All children of node should already be expanded:
-        # assert all(n in self.children for n in self.children[node])
+        assert all(n in self.children for n in self.children[node])
         all_actions = self.children[node]
 
         log_N_vertex = log(sum([self.N[c] for c in all_actions]))
@@ -179,16 +176,16 @@ class MCTS:
             )
 
         return max(all_actions, key=uct)
-    
+
     def _ocba_select(self, node):
         # All children of node should already be expanded:
-        # assert all(n in self.children for n in self.children[node])
+        assert all(n in self.children for n in self.children[node])
         assert len(self.children[node]
                    ) > 0, "Error! Empty children action set!"
 
         if len(self.children[node]) == 1:
             return list(self.children[node])[0]
-        
+
         all_actions = self.children[node]
         b = max(all_actions, key=lambda n: self.ave_Q[n])
         best_Q = self.ave_Q[b]
@@ -198,14 +195,9 @@ class MCTS:
                 best_actions_set.add(k)
             else:
                 suboptimals_set.add(k)
-        # best_actions_set = {
-        #     n for n in all_actions if self.ave_Q[n] == self.ave_Q[b]}
-        # suboptimals_set = all_actions - best_actions_set
         delta = defaultdict(int)
         for k in all_actions:
             delta[k] = abs(self.ave_Q[k] - best_Q)
-        # delta.update(
-        #     dict((k, abs(self.ave_Q[k] - self.ave_Q[b])) for k in all_actions))
 
         if len(suboptimals_set) == 0:
             return min(all_actions, key=lambda n: self.N[n])
@@ -217,8 +209,7 @@ class MCTS:
         para_sum = 0
         for k in suboptimals_set:
             para[k] = ((self.std[k]/delta[k])/(ref_std_delta))**2
-        
-        
+
         for k in best_actions_set:
             para[k] = sqrt(
                 sum(
@@ -231,7 +222,7 @@ class MCTS:
         totalBudget = sum([self.N[c] for c in all_actions])+1
 
         ref_sol = (totalBudget)/para_sum
-        
+
         return max(all_actions, key=lambda n: para[n]*ref_sol - self.N[n])
 
 

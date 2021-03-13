@@ -2,15 +2,10 @@
 An example implementation of the abstract Node class for use in MCTS
 for the inventory control problem
 """
-from copy import deepcopy
-from numpy.random import normal, binomial, randint, random
+from numpy.random import random
 from collections import namedtuple, defaultdict
-from random import choice, randrange
 from monte_carlo_tree_search import MCTS, Node
-from numpy import sqrt, savez
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
+from numpy import sqrt
 import os
 import argparse
 import dill # pip install dill
