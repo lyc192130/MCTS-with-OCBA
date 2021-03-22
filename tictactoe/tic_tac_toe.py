@@ -123,19 +123,19 @@ if __name__ == "__main__":
     parser.add_argument('--rep', type=int,
                         help='number of replications', default=5000)
     parser.add_argument('--budget_start', type=int,
-                        help='budget (number of rollouts) starts from (inclusive)', default=300)
+                        help='budget (number of rollouts) starts from (inclusive)', default=80)
     parser.add_argument('--budget_end', type=int,
-                        help='budget (number of rollouts) end at (inclusive)', default=300)
+                        help='budget (number of rollouts) end at (inclusive)', default=200)
     parser.add_argument('--step', type=int,
-                        help='stepsize in experiment', default=50)
+                        help='stepsize in experiment', default=20)
     parser.add_argument(
         '--n0', type=int, help='initial samples to each action', default=2)
     parser.add_argument('--sigma_0', type=int,
                         help='initial variance', default=10)
     parser.add_argument('--opp_policy', type=str,
-                        help='opponent (Player 1) policy, must be either uct or random', default='uct')
+                        help='opponent (Player 1) policy, must be either uct or random', default='random')
     parser.add_argument('--opp_first_move', type=int,
-                        help='the first move of opponent (Player 1), must be either 0 or 4 (correspond to setup 1 and 2, resp.)', default=0)
+                        help='the first move of opponent (Player 1), must be either 0 or 4 (correspond to setup 1 and 2, resp.)', default=4)
     parser.add_argument(
         '--checkpoint', type=str, help='relative path to checkpoint', default='')
 
@@ -158,7 +158,6 @@ if __name__ == "__main__":
     uct_visit_ave_cnt_list, ocba_visit_ave_cnt_list = [], []
     uct_ave_Q_list, ocba_ave_Q_list = [], []
     uct_ave_std_list, ocba_ave_std_list = [], []
-    uct_ave_std_corrected_list, ocba_ave_std_corrected_list = [], []
     if opp_first_move == 0:
         optimal_set = {4}
         setup = 1
@@ -215,9 +214,9 @@ if __name__ == "__main__":
             ocba_ave_Q.update(dict(
                 (c, ocba_ave_Q[c]+ocba_mcts.ave_Q[c]) for c in ocba_mcts.children[ocba_root_node]))
 
-            uct_ave_std.update(dict((c, uct_ave_std_corrected[c]+sqrt(
+            uct_ave_std.update(dict((c, uct_ave_std[c]+sqrt(
                 uct_mcts.std[c]**2 - sigma_0**2 / uct_mcts.N[c])) for c in uct_mcts.children[uct_root_node]))
-            ocba_ave_std.update(dict((c, ocba_ave_std_corrected[c]+sqrt(
+            ocba_ave_std.update(dict((c, ocba_ave_std[c]+sqrt(
                 ocba_mcts.std[c]**2 - sigma_0**2 / ocba_mcts.N[c])) for c in ocba_mcts.children[ocba_root_node]))
 
             if (i+1) % 100 == 0:
@@ -241,11 +240,6 @@ if __name__ == "__main__":
         ocba_ave_std.update(
             dict((c, ocba_ave_std[c]/rep) for c in ocba_mcts.children[ocba_root_node]))
 
-        uct_ave_std_corrected.update(dict(
-            (c, uct_ave_std_corrected[c]/rep) for c in uct_mcts.children[uct_root_node]))
-        ocba_ave_std_corrected.update(dict(
-            (c, ocba_ave_std_corrected[c]/rep) for c in ocba_mcts.children[ocba_root_node]))
-
         uct_visit_ave_cnt_list.append(uct_visit_cnt)
         ocba_visit_ave_cnt_list.append(ocba_visit_cnt)
 
@@ -255,9 +249,6 @@ if __name__ == "__main__":
         uct_ave_std_list.append(uct_ave_std)
         ocba_ave_std_list.append(ocba_ave_std)
 
-        uct_ave_std_corrected_list.append(uct_ave_std_corrected)
-        ocba_ave_std_corrected_list.append(ocba_ave_std_corrected)
-
         results_uct.append(PCS_uct/rep)
         results_ocba.append(PCS_ocba/rep)
 
@@ -266,5 +257,5 @@ if __name__ == "__main__":
               (PCS_uct/rep, PCS_ocba/rep))
         ckpt_output = 'ckpt/tic_tac_toe_{opp_policy}_opponent_setup{setup}.pkl'.format(
             opp_policy=opp_policy, setup=setup)
-        # dill.dump_session(ckpt_output)
+        dill.dump_session(ckpt_output)
         print('checkpoint saved!')
