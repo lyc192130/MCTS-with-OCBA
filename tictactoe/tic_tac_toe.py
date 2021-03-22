@@ -121,19 +121,19 @@ if __name__ == "__main__":
     os.makedirs("ckpt", exist_ok=True)
     parser = argparse.ArgumentParser()
     parser.add_argument('--rep', type=int,
-                        help='number of replications', default=800)
+                        help='number of replications', default=5000)
     parser.add_argument('--budget_start', type=int,
-                        help='budget (number of rollouts) starts from (inclusive)', default=800)
+                        help='budget (number of rollouts) starts from (inclusive)', default=300)
     parser.add_argument('--budget_end', type=int,
-                        help='budget (number of rollouts) end at (inclusive)', default=800)
+                        help='budget (number of rollouts) end at (inclusive)', default=300)
     parser.add_argument('--step', type=int,
                         help='stepsize in experiment', default=50)
     parser.add_argument(
         '--n0', type=int, help='initial samples to each action', default=2)
     parser.add_argument('--sigma_0', type=int,
-                        help='initial variance', default=100)
+                        help='initial variance', default=10)
     parser.add_argument('--opp_policy', type=str,
-                        help='opponent (Player 1) policy', default='uct')
+                        help='opponent (Player 1) policy, must be either uct or random', default='uct')
     parser.add_argument('--opp_first_move', type=int,
                         help='the first move of opponent (Player 1), must be either 0 or 4 (correspond to setup 1 and 2, resp.)', default=0)
     parser.add_argument(
@@ -141,7 +141,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # replications
     rep = args.rep
     budget_start = args.budget_start
     budget_end = args.budget_end
@@ -173,7 +172,7 @@ if __name__ == "__main__":
 
     if ckpt != '':
         dill.load_session(ckpt)
-        # start experiment from the last finished budget
+        # resume experiment from the last finished budget
         budget_range = range(budget+step, budget_end+1, step)
 
     for budget in budget_range:
@@ -184,8 +183,6 @@ if __name__ == "__main__":
         uct_visit_cnt, ocba_visit_cnt = defaultdict(int), defaultdict(int)
         uct_ave_Q, ocba_ave_Q = defaultdict(int), defaultdict(int)
         uct_ave_std, ocba_ave_std = defaultdict(int), defaultdict(int)
-        uct_ave_std_corrected, ocba_ave_std_corrected = defaultdict(
-            int), defaultdict(int)
         for i in range(rep):
             uct_mcts, uct_root_node, uct_cur_node = play_game_uct(
                 budget=budget,
@@ -218,14 +215,9 @@ if __name__ == "__main__":
             ocba_ave_Q.update(dict(
                 (c, ocba_ave_Q[c]+ocba_mcts.ave_Q[c]) for c in ocba_mcts.children[ocba_root_node]))
 
-            uct_ave_std.update(dict(
-                (c, uct_ave_std[c]+uct_mcts.std[c]) for c in uct_mcts.children[uct_root_node]))
-            ocba_ave_std.update(dict(
-                (c, ocba_ave_std[c]+ocba_mcts.std[c]) for c in ocba_mcts.children[ocba_root_node]))
-
-            uct_ave_std_corrected.update(dict((c, uct_ave_std_corrected[c]+sqrt(
+            uct_ave_std.update(dict((c, uct_ave_std_corrected[c]+sqrt(
                 uct_mcts.std[c]**2 - sigma_0**2 / uct_mcts.N[c])) for c in uct_mcts.children[uct_root_node]))
-            ocba_ave_std_corrected.update(dict((c, ocba_ave_std_corrected[c]+sqrt(
+            ocba_ave_std.update(dict((c, ocba_ave_std_corrected[c]+sqrt(
                 ocba_mcts.std[c]**2 - sigma_0**2 / ocba_mcts.N[c])) for c in ocba_mcts.children[ocba_root_node]))
 
             if (i+1) % 100 == 0:
@@ -274,5 +266,5 @@ if __name__ == "__main__":
               (PCS_uct/rep, PCS_ocba/rep))
         ckpt_output = 'ckpt/tic_tac_toe_{opp_policy}_opponent_setup{setup}.pkl'.format(
             opp_policy=opp_policy, setup=setup)
-        dill.dump_session(ckpt_output)
+        # dill.dump_session(ckpt_output)
         print('checkpoint saved!')

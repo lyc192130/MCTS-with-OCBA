@@ -68,7 +68,7 @@ def allocation_dist_plot(actions, ave_Q, ave_std, ave_N, title):
 
     par2.axis["right"].toggle(all=True)
 
-    host.set_xlim(actions[0]-0.5, actions[-1]+0.5)
+    host.set_xlim(-0.5, len(actions)-0.5)
     host.set_ylim(0.9*min(ave_Q), 1.3*max(ave_Q))
     par1.set_ylim(0, 1.1*max(ave_std))
     par2.set_ylim(0, 1.1*max(ave_N))
@@ -77,14 +77,19 @@ def allocation_dist_plot(actions, ave_Q, ave_std, ave_N, title):
     host.set_ylabel("Estimated value function Q")
     par1.set_ylabel("Estimated standard deviation")
     par2.set_ylabel("Average number of visits")
+    
+    # To make x axis evenly spaced
+    x_data = range(len(actions))
+    host.xaxis.set_ticks(x_data)
+    host.xaxis.set_ticklabels([str(x) for x in actions])
 
-    p1, = host.plot(actions, ave_Q, label="Q", linestyle='solid', marker='o')
-    p2, = par1.plot(actions, ave_std, label="std",
+    p1, = host.plot(x_data, ave_Q, label="Q", linestyle='solid', marker='o')
+    p2, = par1.plot(x_data, ave_std, label="std",
                     linestyle='dashed', marker='v')
-    p3 = par2.bar(actions, ave_N, label="# visits", color='cyan')
+    p3 = par2.bar(x_data, ave_N, label="# visits", color='cyan')
 
     # Set legend location
-    host.legend(loc=(0.7, 0.5))
+    host.legend(loc=(0.38, 0.03))
 
     host.axis["left"].label.set_color(p1.get_color())
     par1.axis["right"].label.set_color(p2.get_color())
@@ -99,7 +104,7 @@ def allocation_dist_plot(actions, ave_Q, ave_std, ave_N, title):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--checkpoint', type=str, help='relative path to checkpoint', default='ckpt/tic_tac_toe_uct_opponent_setup1.pkl')
+        '--checkpoint', type=str, help='relative path to checkpoint', default='results/tmp/tic_tac_toe_uct_opponent_setup2.pkl')
     args = parser.parse_args()
     ckpt = args.checkpoint
 
@@ -140,7 +145,7 @@ if __name__ == '__main__':
         ave_Q=uct_ave_Q_to_list,
         ave_std=uct_ave_std_to_list,
         ave_N=uct_ave_N_to_list,
-        title='results/TTT_sample_distribution_{opp_policy}_opponent_uct_setup{setup}.eps'.format(
+        title='results/tmp/TTT_sample_distribution_{opp_policy}_opponent_uct_setup{setup}.eps'.format(
             opp_policy=opp_policy, setup=setup)
     )
     allocation_dist_plot(
@@ -148,7 +153,7 @@ if __name__ == '__main__':
         ave_Q=ocba_ave_Q_to_list,
         ave_std=ocba_ave_std_to_list,
         ave_N=ocba_ave_N_to_list,
-        title='results/TTT_sample_distribution_{opp_policy}_opponent_ocba_setup{setup}.eps'.format(
+        title='results/tmp/TTT_sample_distribution_{opp_policy}_opponent_ocba_setup{setup}.eps'.format(
             opp_policy=opp_policy, setup=setup)
     )
 
