@@ -105,7 +105,7 @@ if __name__ == "__main__":
     os.makedirs("ckpt", exist_ok=True)
     parser = argparse.ArgumentParser()
     parser.add_argument('--rep', type=int,
-                        help='number of replications', default=1500)
+                        help='number of replications', default=2000)
     parser.add_argument('--budget_start', type=int,
                         help='budget (number of rollouts) starts from (inclusive)', default=50)
     parser.add_argument('--budget_end', type=int,
@@ -163,8 +163,6 @@ if __name__ == "__main__":
         uct_visit_cnt, ocba_visit_cnt = defaultdict(int), defaultdict(int)
         uct_ave_Q, ocba_ave_Q = defaultdict(int), defaultdict(int)
         uct_ave_std, ocba_ave_std = defaultdict(int), defaultdict(int)
-        uct_ave_std_corrected, ocba_ave_std_corrected = defaultdict(
-            int), defaultdict(int)
         for i in range(rep):
             uct_mcts, uct_root_node, uct_cur_node =\
                 play_game_uct(budget=budget, exploration_weight=exploration_weight,
@@ -188,14 +186,9 @@ if __name__ == "__main__":
             ocba_ave_Q.update(dict(
                 (c, ocba_ave_Q[c]+ocba_mcts.ave_Q[c]) for c in ocba_mcts.children[ocba_root_node]))
 
-            uct_ave_std.update(dict(
-                (c, uct_ave_std[c]+uct_mcts.std[c]) for c in uct_mcts.children[uct_root_node]))
-            ocba_ave_std.update(dict(
-                (c, ocba_ave_std[c]+ocba_mcts.std[c]) for c in ocba_mcts.children[ocba_root_node]))
-
-            uct_ave_std_corrected.update(dict((c, uct_ave_std_corrected[c]+sqrt(
+            uct_ave_std.update(dict((c, uct_ave_std_corrected[c]+sqrt(
                 uct_mcts.std[c]**2 - sigma_0**2 / uct_mcts.N[c])) for c in uct_mcts.children[uct_root_node]))
-            ocba_ave_std_corrected.update(dict((c, ocba_ave_std_corrected[c]+sqrt(
+            ocba_ave_std.update(dict((c, ocba_ave_std_corrected[c]+sqrt(
                 ocba_mcts.std[c]**2 - sigma_0**2 / ocba_mcts.N[c])) for c in ocba_mcts.children[ocba_root_node]))
             if (i+1) % 20 == 0:
                 print('%0.2f%% finished for budget limit %d' %

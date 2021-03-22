@@ -10,7 +10,7 @@ from numpy import log, sqrt
 class MCTS:
     "Monte Carlo tree searcher. First rollout the tree then choose a move."
 
-    def __init__(self, exploration_weight=5000, policy='uct', budget=1000, optimum=0, n0=5, sigma_0=1):
+    def __init__(self, exploration_weight=5000, policy='uct', budget=1000, optimum=0, n0=4, sigma_0=1):
         self.Q = defaultdict(float)  # total reward of each node
         self.V_bar = defaultdict(float)
         self.V_hat = defaultdict(float)

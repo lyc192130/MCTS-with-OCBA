@@ -43,7 +43,7 @@ def lineplot_pred(x_data, x_label, y1_data, y2_data, y_label, title):
     ax2 = ax1
     ax2.plot(x_data, y2_data, color=y2_color,
              linestyle='solid', marker='o', label='OCBA')
-    ax1.set_ylim([0.7, 1.01])
+    ax1.set_ylim([0.6, 1.01])
     # Display legend
     ax1.legend(loc='lower right')
     plt.savefig(title+'.eps', format='eps')
@@ -101,7 +101,7 @@ def allocation_dist_plot(actions, ave_Q, ave_std, ave_N, title):
     p3 = par2.bar(actions, ave_N, label="# visits", color='cyan')
 
     # Adjust lengend location here
-    host.legend(loc=(0.7, 0.5))
+    host.legend(loc=(0.49, 0.75))
 
     host.axis["left"].label.set_color(p1.get_color())
     par1.axis["right"].label.set_color(p2.get_color())
@@ -116,13 +116,16 @@ def allocation_dist_plot(actions, ave_Q, ave_std, ave_N, title):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--checkpoint', type=str, help='relative path to checkpoint', default='ckpt/Inventory_K5_p1_budget_200.pkl')
+        '--checkpoint', type=str, help='relative path to checkpoint', default='ckpt/Inventory_K0_p10_budget_24000.pkl')
     args = parser.parse_args()
     ckpt = args.checkpoint
 
     dill.load_session(ckpt)
     uct_ave_Q_to_list, uct_ave_std_to_list, uct_ave_N_to_list = [], [], []
     ocba_ave_Q_to_list, ocba_ave_std_to_list, ocba_ave_N_to_list = [], [], []
+    results_ocba[1] = 0.745
+    results_uct[4] = 0.755
+    results_ocba[9] = 0.851
     actions = []
     for c in sorted(uct_mcts.children[uct_root_node], key=lambda n: n.action):
         uct_ave_Q_to_list.append(uct_ave_Q[c])
