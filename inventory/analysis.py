@@ -1,23 +1,3 @@
-"""
-An example implementation of the abstract Node class for use in MCTS
-
-If you run this file then you can play against the computer.
-
-A tic-tac-toe board is represented as a tuple of 9 values, each either None,
-True, or False, respectively meaning 'empty', 'X', and 'O'.
-
-The board is indexed by row:
-0 1 2
-3 4 5
-6 7 8
-
-For example, this game board
-O - X
-O X -
-X - -
-corrresponds to this tuple:
-(False, None, True, False, True, None, True, None, None)
-"""
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import host_subplot
 import mpl_toolkits.axisartist as AA
